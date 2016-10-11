@@ -1,0 +1,25 @@
+<h2>Login</h2>
+<form action="/login" method="post">
+    <div>
+      <label for="username">Username:</label>
+      <input id="username" type="text" name="username">
+    </div>
+    <div>
+      <label for="password">Password:</label>
+      <input id="password" type="password" name="password">
+    </div>
+    <div class="error-msg">
+      <p>Invalid username or password!</p>
+    </div>
+    <div>
+      <input type="submit" value="Login">
+    </div>
+</form>
+<div>
+  <a class="btn btn-block btn-social btn-github" href="/auth/github">
+    <span class="fa fa-github"></span> Sign in with GitHub
+  </a>
+</div>
+<p>
+  <a href="/signup">Create an Account &rarr;</a>
+<p>

@@ -12,6 +12,7 @@ db.knex.schema.hasTable('urls').then(function(exists) {
   if (!exists) {
     db.knex.schema.createTable('urls', function (link) {
       link.increments('id').primary();
+      link.string('userid', 100).references('id').inTable('users');
       link.string('url', 255);
       link.string('baseUrl', 255);
       link.string('code', 100);

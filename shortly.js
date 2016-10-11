@@ -47,18 +47,15 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 passport.serializeUser(function(user, done) {
-  // placeholder for custom user serialization
-  // null is for errors
   done(null, user);
 });
 
 passport.deserializeUser(function(user, done) {
-  // placeholder for custom user deserialization.
-  // maybe you are going to get the user from mongo by id?
-  // null is for errors
-  // If it breaks, it's because of this
   done(null, user);
 });
+
+
+// ROUTES
 
 app.get('/auth/github', passport.authenticate('github'));
 
@@ -67,8 +64,6 @@ app.get('/auth/github/callback', passport.authenticate('github', { failureRedire
     res.redirect('/');
   }
 );
-
-// ROUTES
 
 app.get('/login',
 function(req, res) {
@@ -94,11 +89,26 @@ function(req, res) {
   res.render('index');
 });
 
+// app.get('/links', util.checkLogIn,
+// function(req, res) {
+//   Links.reset().fetch().then(function(links) {
+//     res.status(200).send(links.models);
+//   });
+// });
+
 app.get('/links', util.checkLogIn,
 function(req, res) {
-  Links.reset().fetch().then(function(links) {
-    res.status(200).send(links.models);
-  });
+
+  new User({username: req.session.user}).fetch()
+    .then(function(found) {
+      Links.reset().fetch().then(function(links) {
+        var personalLinks;
+        personalLinks = links.filter(function(link) {
+          return Number(link.attributes.userid) === found.id;
+        });
+        res.status(200).send(personalLinks);
+      });
+    });
 });
 
 app.post('/links',
@@ -111,25 +121,26 @@ function(req, res) {
   }
 
   new Link({ url: uri }).fetch().then(function(found) {
-    if (found) {
-      res.status(200).send(found.attributes);
-    } else {
-      util.getUrlTitle(uri, function(err, title) {
-        if (err) {
-          console.log('Error reading URL heading: ', err);
-          return res.sendStatus(404);
-        }
+    util.getUrlTitle(uri, function(err, title) {
+      if (err) {
+        console.log('Error reading URL heading: ', err);
+        return res.sendStatus(404);
+      }
 
-        Links.create({
-          url: uri,
-          title: title,
-          baseUrl: req.headers.origin
-        })
-        .then(function(newLink) {
-          res.status(200).send(newLink);
-        });
+      new User({username: req.session.user}).fetch().then(function(found) {
+        if (found) {
+          Links.create({
+            url: uri,
+            title: title,
+            baseUrl: req.headers.origin,
+            userid: found.id
+          })
+          .then(function(newLink) {
+            res.status(200).send(newLink);
+          });
+        }
       });
-    }
+    });
   });
 });
 
@@ -147,8 +158,7 @@ app.post('/signup', function(req, res) {
     username: username
   }).fetch().then(function(found) {
     if (found) {
-      // TODO send back to login page and add a message
-      res.end('username already exists');
+      res.render('signup-err');
     } else {
       Users.create({
         username: username,
@@ -175,13 +185,11 @@ app.post('/login', function(req, res) {
           req.session.user = username;
           res.redirect('/');
         } else {
-          // TODO generate error message
-          res.redirect('/login');
+          res.render('login-err');
         }
       });
     } else {
-      // TODO generate error message
-      res.redirect('/login');
+      res.render('login-err');
     }
   });
 });
