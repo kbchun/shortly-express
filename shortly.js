@@ -98,15 +98,10 @@ function(req, res) {
 
 app.get('/links', util.checkLogIn,
 function(req, res) {
-
   new User({username: req.session.user}).fetch()
     .then(function(found) {
       Links.reset().fetch().then(function(links) {
-        var personalLinks;
-        personalLinks = links.filter(function(link) {
-          return Number(link.attributes.userid) === found.id;
-        });
-        res.status(200).send(personalLinks);
+        res.status(200).send(links.where({ userid: found.id + ''}));
       });
     });
 });
