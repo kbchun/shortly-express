@@ -32,10 +32,10 @@ h1 {
 }
 
 .navigation .logout {
-  float: left;
+  float: right;
 }
 
-.navigation li a {
+.navigation li a , .logout {
   width: 100px;
   height: 20px;
   line-height: 20px;
@@ -134,4 +134,8 @@ form input[type=text], form input[type=password] {
 
 .creator .message {
   clear: both;
+}
+
+li.logout-container {
+  float: right;
 }
