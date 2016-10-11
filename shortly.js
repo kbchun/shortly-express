@@ -4,6 +4,7 @@ var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var bcrypt = require('bcrypt-nodejs');
+var passport = require('passport');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -27,6 +28,47 @@ app.use(session({
   saveUninitialized: true,
   resave: false
 }));
+
+
+// GitHub Auhentication
+var GithubStrategy = require('passport-github').Strategy;
+
+passport.use(new GithubStrategy({
+  clientID: 'd0067a81fb03564038fa',
+  clientSecret: 'f021e39942f16193866492af1ccccf4fb2afd6d9',
+  callbackURL: 'http://127.0.0.1:4568/auth/github/callback'
+},
+  function(accessToken, refreshToken, profile, done) {
+    return done(null, profile);
+  }
+));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser(function(user, done) {
+  // placeholder for custom user serialization
+  // null is for errors
+  done(null, user);
+});
+
+passport.deserializeUser(function(user, done) {
+  // placeholder for custom user deserialization.
+  // maybe you are going to get the user from mongo by id?
+  // null is for errors
+  // If it breaks, it's because of this
+  done(null, user);
+});
+
+app.get('/auth/github', passport.authenticate('github'));
+
+app.get('/auth/github/callback', passport.authenticate('github', { failureRedirect: '/' }),
+  function(req, res) {
+    res.redirect('/');
+  }
+);
+
+// ROUTES
 
 app.get('/login',
 function(req, res) {
@@ -147,6 +189,7 @@ app.post('/login', function(req, res) {
 app.get('/logout',
 function(req, res) {
   req.session.destroy();
+  req.logout();
   res.redirect('/');
 });
 

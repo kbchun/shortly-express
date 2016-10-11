@@ -49,8 +49,8 @@ db.knex.schema.hasTable('users').then(function(exists) {
       user.timestamps();
     }).then(function(table) {
       console.log('Created Table', table);
-    })
+    });
   }
-})
+});
 
 module.exports = db;
